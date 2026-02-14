@@ -6,6 +6,8 @@ lower_bound = int(input())
 upper_bound = int(input())
 ciphertext = text = sys.stdin.read()
 
+alphabet = "abcdefghijklmnopqrstuvwxyz"
+
 
 def match_character_to_index(character):
     if ord(character.lower()) - ord("a") > 25 or ord(character.lower()) - ord("a") < 0:
@@ -21,6 +23,22 @@ def square_vector(vector: list[int]):
 
 def std_vector(vector: list[int]):
     return math.sqrt((sum(square_vector(vector)) / 26) - (sum(vector) / 26) ** 2)
+
+
+def determine_shift_letter(cipherletter):
+    # shift is always calculated wrt to e because of exercise constraints
+    shift = ord(cipherletter) - ord("e")
+    return alphabet[shift]
+
+
+def argmax(array: list[int]):
+    best = array[0]
+    best_index = 0
+    for i in range(len(array)):
+        if array[i] > best:
+            best = array[i]
+            best_index = i
+    return best_index
 
 
 def vigenere_crack(ciphertext, lower_bound, upper_bound):
@@ -43,14 +61,19 @@ def vigenere_crack(ciphertext, lower_bound, upper_bound):
         stddevs = 0
         for vector in key_vectors:
             stddevs += std_vector(vector)
+        sys.stdout.write(f"The sum of {key_length} std. devs: {stddevs:.2f}\n")
         stddevs = round(stddevs, 2)
-        sys.stdout.write(f"sum of {key_length} std. devs: {stddevs}\n")
         if stddevs > highest_std:
             highest_std = stddevs
             best_key_length = key_length
-    sys.stdout.write(f"key length guess: {best_key_length}\n")
+            best_key_vectors = deepcopy(key_vectors)
+    key = ""
+    for index in range(best_key_length):
+        letter = alphabet[argmax(best_key_vectors[index])]
+        key += determine_shift_letter(letter)
     sys.stdout.write("\n")
-    # key guess part
+
+    return key
 
 
 result = vigenere_crack(ciphertext, lower_bound, upper_bound)
